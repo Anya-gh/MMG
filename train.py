@@ -1,4 +1,5 @@
 import torch
+import argparse
 import os
 from dataset import load_data, load_config
 from model import Generator, Discriminator
@@ -54,3 +55,13 @@ def train(cfg_file):
             errG.backward()
             g_optimiser.step()
 
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser("ttttt")
+    parser.add_argument(
+        "config",
+        default="configs/asap.yaml",
+        type=str,
+        help="Training configuration file (yaml).",
+    )
+    args = parser.parse_args()
+    train(cfg_file=args.config)

@@ -9,11 +9,11 @@ def train(cfg_file):
     train_loader, val_loader, test_loader = load_data(data_cfg=cfg["data"])
     
     # models + optimisers + loss
-    generator = Generator()
+    generator = Generator(3, 16, 1, 3)
     g_optimiser = torch.optim.Adam(generator.parameters(), lr=float(cfg["transformer"].get("lr")), betas=(0.9, 0.98), eps=1e-9)
     g_criterion = torch.nn.MSELoss()
 
-    discriminator = Discriminator()
+    discriminator = Discriminator(3, 16, 1, 1)
     d_optimiser = torch.optim.Adam(discriminator.parameters(), lr=float(cfg["transformer"].get("lr")), betas=(0.9, 0.98), eps=1e-9)
     d_criterion = torch.nn.BCELoss()
 

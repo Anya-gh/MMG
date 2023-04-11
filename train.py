@@ -36,14 +36,14 @@ def train(cfg_file):
             score, performance = batch
             discriminator.zero_grad()
             batch_size = performance.size(0)
-            real_output = discriminator(performance)
-            real_labels = torch.ones((batch_size, ), 1, dtype=torch.float)
+            real_output = discriminator(performance)[:,1][-1]
+            real_labels = torch.ones((batch_size, ), dtype=torch.float)
             errD_real = d_criterion(real_output, real_labels)
             errD_real.backward()
 
             fake = generator(score)
-            fake_labels = torch.zeros((batch_size, ), 1, dtype=torch.float)
-            fake_output = discriminator(fake)
+            fake_labels = torch.zeros((batch_size, ), dtype=torch.float)
+            fake_output = discriminator(fake)[:,1][-1]
             errD_fake = d_criterion(fake_output, fake_labels)
             errD_fake.backward()
 

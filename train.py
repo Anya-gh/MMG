@@ -28,29 +28,30 @@ def train(cfg_file):
 
     for epoch in range(epochs):
         print(f'Epoch: {epoch}')
-        generator.train()
-        discriminator.train()
+        #generator.train()
+        #discriminator.train()
         
-        for batch_index, batch in enumerate(train_loader):
+        for batch_index, batch in enumerate(train_loader, 0):
             
             score, performance = batch
+
             discriminator.zero_grad()
             batch_size = performance.size(0)
             real_output = discriminator(performance)[:,1][-1]
             real_labels = torch.ones((batch_size, ), dtype=torch.float)
             errD_real = d_criterion(real_output, real_labels)
-            errD_real.backward()
+            errD_real.backward(retain_graph=True)
 
             fake = generator(score)
             fake_labels = torch.zeros((batch_size, ), dtype=torch.float)
             fake_output = discriminator(fake)[:,1][-1]
             errD_fake = d_criterion(fake_output, fake_labels)
-            errD_fake.backward()
+            errD_fake.backward(retain_graph=True)
 
             d_optimiser.step()
 
             generator.zero_grad()
-            fake_output = discriminator(fake)
+            fake_output = discriminator(fake)[:,1][-1]
             errG = g_criterion(fake_output, real_labels)
             errG.backward()
             g_optimiser.step()

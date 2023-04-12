@@ -121,7 +121,7 @@ def retrieveLCM(sequence_1, sequence_2):
     cost = computeLCM(sequence_1, sequence_2, penalty)
     i, j = len(sequence_1), len(sequence_2)
     mapping = []
-    while (i > 0):
+    while (i > 0) and (j > 0):
         # i is not mapped to j
         if cost[i][j] == cost[i][j-1]:
             j -= 1

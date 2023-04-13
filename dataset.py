@@ -3,6 +3,7 @@ from torch.utils.data import Dataset, DataLoader
 import pandas as pd
 import numpy as np
 import os
+import sys
 from extract import getMapping
 import pretty_midi
 from torch.utils.data.sampler import SubsetRandomSampler, SequentialSampler
@@ -36,12 +37,17 @@ class MMGDataset(Dataset):
 
     def __getitem__(self, index):
         robotic_path, performance_path = self.data.iloc[index]
-        mapping = getMapping(pretty_midi.PrettyMIDI(os.path.join(self.dataset_path, performance_path)), 
-                             pretty_midi.PrettyMIDI(os.path.join(self.dataset_path, robotic_path)))
-        # don't include pitch
-        robotic_notes = np.delete(mapping[:,0], -1, axis=1)
-        performance_notes = np.delete(mapping[:,1], -1, axis=1)
-        return torch.tensor(robotic_notes), torch.tensor(performance_notes)
+        try:
+            mapping = getMapping(pretty_midi.PrettyMIDI(os.path.join(self.dataset_path, performance_path)), 
+                                pretty_midi.PrettyMIDI(os.path.join(self.dataset_path, robotic_path)))
+            # don't include pitch
+            robotic_notes = np.delete(mapping[:,0], -1, axis=1)
+            performance_notes = np.delete(mapping[:,1], -1, axis=1)
+            return torch.tensor(robotic_notes), torch.tensor(performance_notes)
+        except IndexError as error:
+            print(error)
+            print(f'For files: {os.path.join(self.dataset_path, performance_path)} {os.path.join(self.dataset_path, robotic_path)}')
+            sys.exit()
 
 def load_config(path) -> dict:
     """

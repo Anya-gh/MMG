@@ -86,9 +86,11 @@ def computeLCM(sequence_1, sequence_2, penalty):
     # 0 to 0 should have no cost
     cost[0][0] = 0
     for i in range(1, len(sequence_1) + 1):
-        for j in range(i, len(sequence_2) + 1):
+        for j in range(1, len(sequence_2) + 1):
             # min between ignoring jth element, mapping i to j, or ignoring ith element with some penalty
             cost[i][j] = min(cost[i][j-1], cost[i-1][j-1] + abs(sequence_1[i-1] - sequence_2[j-1]), cost[i-1][j] + penalty)
+    #np.set_printoptions(threshold=np.inf)
+    #print(cost)
     return cost
 
 def retrieveLCM(sequence_1, sequence_2):
@@ -116,12 +118,13 @@ def retrieveLCM(sequence_1, sequence_2):
     penalty = 1/max(len(sequence_2), len(sequence_1))
     # first should always be smaller than second
     # NOTE: it makes things much easier if you just pass them in the right order.
-    if len(sequence_1) > len(sequence_2):
-        sequence_1, sequence_2 = sequence_2, sequence_1
+    #if len(sequence_1) > len(sequence_2):
+    #    sequence_1, sequence_2 = sequence_2, sequence_1
     cost = computeLCM(sequence_1, sequence_2, penalty)
     i, j = len(sequence_1), len(sequence_2)
     mapping = []
     while (i > 0) and (j > 0):
+        # print(f'{i}, {j}')
         # i is not mapped to j
         if cost[i][j] == cost[i][j-1]:
             j -= 1
@@ -159,13 +162,7 @@ def translateMapping(mapping, r_notes, p_notes):
     original note sequences.
     '''
     
-    indices = None
-    p_greater = True if len(p_notes) > len(r_notes) else False
-    # If p_greater then retrieveLCM swapped the sequences around.
-    if p_greater:
-        indices = [(r_notes[x[0]-1][0], p_notes[x[1]-1][0]) for x in mapping]
-    else:
-        indices = [(r_notes[x[1]-1][0], p_notes[x[0]-1][0]) for x in mapping]
+    indices = [(r_notes[x[0]-1][0], p_notes[x[1]-1][0]) for x in mapping]
     return indices
 
 
@@ -198,6 +195,7 @@ def getMapping(performanceMIDI: pretty_midi.PrettyMIDI, roboticMIDI: pretty_midi
         r_notes = robotic_map[pitch]
         p_seq = np.array([note[1] for note in p_notes])
         r_seq = np.array([note[1] for note in r_notes])
+        #print(f'Pitch: {pitch}')
         mapping = retrieveLCM(r_seq, p_seq)
         mapping = translateMapping(mapping, r_notes, p_notes)
         indices += mapping
@@ -221,5 +219,4 @@ if __name__ == '__main__':
     print("Loading {} ...".format(parameters['robotic']))
     robotic = pretty_midi.PrettyMIDI(parameters['robotic'])
     mapping = getMapping(performance, robotic)
-    print(mapping)
-
+    #print(mapping)

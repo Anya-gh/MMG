@@ -2,7 +2,7 @@ import torch
 import argparse
 import os
 from dataset import load_data, load_config
-from model import Generator, Discriminator
+from gan import Generator, Discriminator
 
 def train(cfg_file):
     cfg = load_config(cfg_file)

@@ -56,6 +56,7 @@ def train(cfg_file):
             fake_output = discriminator(fake)[:,1][-1]
             errG_adv = adv_criterion(fake_output, real_labels)
             errG_rec = rec_criterion(fake, score)
+            # print(f'{errG_rec} + {errG_adv}')
             errG = errG_adv + errG_rec
             errG.backward()
             g_optimiser.step()

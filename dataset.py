@@ -40,9 +40,8 @@ class MMGDataset(Dataset):
         try:
             mapping = getMapping(pretty_midi.PrettyMIDI(os.path.join(self.dataset_path, performance_path)), 
                                 pretty_midi.PrettyMIDI(os.path.join(self.dataset_path, robotic_path)))
-            # don't include pitch
-            robotic_notes = np.delete(mapping[:,0], -1, axis=1)
-            performance_notes = np.delete(mapping[:,1], -1, axis=1)
+            robotic_notes = mapping[:,0]
+            performance_notes = mapping[:,1]
             return torch.tensor(robotic_notes), torch.tensor(performance_notes)
         except IndexError as error:
             print(error)

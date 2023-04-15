@@ -5,8 +5,8 @@ class ReconstructionLoss(torch.nn.Module):
    def __init__(self):
       super(ReconstructionLoss, self).__init__()
    def forward(self, fake, real):
-      result = F.cosine_similarity(fake, real)
-      loss = max(0, result.size(dim=-1) - torch.sum(result))
+      sim_matrix = F.cosine_similarity(fake, real)
+      loss = torch.sum(sim_matrix)
       return loss
    
 class Generator(torch.nn.Module):

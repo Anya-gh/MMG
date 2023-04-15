@@ -15,3 +15,4 @@ class LSTM(torch.nn.Module):
       out = torch.cat([out, pitch], dim=-1)
       print(out.shape)
       return out
+

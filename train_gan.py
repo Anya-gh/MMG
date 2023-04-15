@@ -1,8 +1,11 @@
 import torch
+from torch.utils.tensorboard import SummaryWriter
 import argparse
 import os
+import shutil
 from dataset import load_data, load_config
 from gan import Generator, Discriminator, ReconstructionLoss
+from tqdm import tqdm
 
 def train(cfg_file):
     cfg = load_config(cfg_file)
@@ -21,6 +24,11 @@ def train(cfg_file):
 
     epochs = cfg["training"].get("epochs")
 
+    log_dir = cfg["generic"].get("log_dir")
+    if cfg['generic'].get('clear_log') and os.path.exists(log_dir):
+        shutil.rmtree(log_dir)
+    writer = SummaryWriter(log_dir=log_dir)
+
     # Save stuff
     save = cfg["training"].get("save")
     save_every = cfg["training"].get("save_every")
@@ -30,10 +38,10 @@ def train(cfg_file):
 
     for epoch in range(epochs):
         print(f'Epoch: {epoch}')
-        #generator.train()
-        #discriminator.train()
+        generator.train()
+        discriminator.train()
         
-        for batch_index, batch in enumerate(train_loader, 0):
+        for batch_idx, batch in tqdm(enumerate(train_loader)):
             
             score, performance = batch
 
@@ -50,6 +58,8 @@ def train(cfg_file):
             errD_fake = adv_criterion(fake_output, fake_labels)
             errD_fake.backward(retain_graph=True)
 
+            errD = errD_real + errD_fake
+
             d_optimiser.step()
 
             generator.zero_grad()
@@ -60,6 +70,40 @@ def train(cfg_file):
             errG = errG_adv + errG_rec
             errG.backward()
             g_optimiser.step()
+
+            global_step = epoch*len(train_loader) + batch_idx
+            writer.add_scalar('(Generator) Loss/train', errG.item(), global_step)
+            writer.add_scalar('(Discriminator) Loss/train', errD.item(), global_step)
+
+        generator.eval()
+        errG_val = 0
+        errD_val = 0
+        for batch_idx, batch in tqdm(enumerate(val_loader)):
+            with torch.no_grad():
+                score, performance = batch
+
+                batch_size = performance.size(0)
+                real_output = discriminator(performance)[:,1][-1]
+                real_labels = torch.ones((batch_size, ), dtype=torch.float)
+                errD_real = adv_criterion(real_output, real_labels)
+
+                fake = generator(score)
+                fake_labels = torch.zeros((batch_size, ), dtype=torch.float)
+                fake_output = discriminator(fake)[:,1][-1]
+                errD_fake = adv_criterion(fake_output, fake_labels)
+
+                errD_val += errD_real + errD_fake
+
+                fake_output = discriminator(fake)[:,1][-1]
+                errG_adv = adv_criterion(fake_output, real_labels)
+                errG_rec = rec_criterion(fake, score)
+                errG_val += errG_adv + errG_rec
+
+        # Tensorboard
+        errG_avg = errG_val / len(val_loader)
+        errD_avg = errD_val / len(val_loader)
+        writer.add_scalar('(Generator) Loss/val', errG_avg, global_step)
+        writer.add_scalar('(Discriminator) Loss/val', errD_avg, global_step)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("ttttt")

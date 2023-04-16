@@ -108,6 +108,12 @@ def train(cfg_file):
         writer.add_scalar('(Generator) Loss/val', errG_avg, global_step)
         writer.add_scalar('(Discriminator) Loss/val', errD_avg, global_step)
 
+        if save and epoch % save_every == 0:
+            gen_save_loc = os.path.join(save_dir, "gen_epoch_{:}.pt".format(epoch))
+            torch.save(generator.state_dict(), gen_save_loc)
+            dis_save_loc = os.path.join(save_dir, "dis_epoch_{:}.pt".format(epoch))
+            torch.save(discriminator.state_dict(), dis_save_loc)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("ttttt")
     parser.add_argument(

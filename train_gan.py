@@ -52,7 +52,10 @@ def train(cfg_file):
             errD_real = adv_criterion(real_output, real_labels)
             errD_real.backward(retain_graph=True)
 
-            fake = generator(score)
+            latent = torch.randn(batch_size, 16, 4)
+            gen_input = torch.cat((latent, score), dim=1)
+            # Don't care about the output for the latent vector
+            fake = generator(gen_input)[:,16:]
             fake_labels = torch.zeros((batch_size, ), dtype=torch.float)
             fake_output = discriminator(fake)[:,1][-1]
             errD_fake = adv_criterion(fake_output, fake_labels)

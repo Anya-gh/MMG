@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+import math
 
 class ReconstructionLoss(torch.nn.Module):
    def __init__(self):
@@ -7,10 +8,12 @@ class ReconstructionLoss(torch.nn.Module):
    def forward(self, fake, real):
       # This should probably be a threshold, i.e. if its too close penalise, otherwise don't.
       # Doing it this way encourages it to be as different as possible, instead of just not being too close.
-      # Possible solution is to scale it e.g. 1 for very close, but tends to 0 very quickly (e.g. difference of 1 is 0.0000001) or w/e
+      # Possible solution is to scale it e.g. 1 for very close, but tends to 0 very quickly (e.g. difference of 0.25 is 0.0000001) or w/e
       sim_matrix = torch.squeeze(F.cosine_similarity(fake, real), dim=-1)
-      loss = torch.sum(sim_matrix)
-      return loss
+      # Resulting graph (f and g respectively) https://www.desmos.com/calculator/qhgt0mprqq
+      loss_f = torch.sum(sim_matrix)
+      loss_g = (math.e)**(3-loss_f)
+      return loss_g
    
 class Generator(torch.nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):

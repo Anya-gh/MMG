@@ -8,14 +8,16 @@ from gan import Generator, Discriminator, ReconstructionLoss
 from tqdm import tqdm
 
 def train(cfg_file):
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    print('Device: ', device)
     cfg = load_config(cfg_file)
     train_loader, val_loader, test_loader = load_data(data_cfg=cfg["data"])
     
     # models + optimisers
-    generator = Generator(4, 16, 3, 3)
+    generator = Generator(4, 16, 3, 3).to(device)
     g_optimiser = torch.optim.Adam(generator.parameters(), lr=float(cfg["transformer"].get("lr")), betas=(0.9, 0.98), eps=1e-9)
 
-    discriminator = Discriminator(4, 16, 3)
+    discriminator = Discriminator(4, 16, 3).to(device)
     d_optimiser = torch.optim.Adam(discriminator.parameters(), lr=float(cfg["transformer"].get("lr")), betas=(0.9, 0.98), eps=1e-9)
 
     # adversarial and reconstruction loss
@@ -44,6 +46,9 @@ def train(cfg_file):
         for batch_idx, batch in tqdm(enumerate(train_loader)):
             
             score, performance = batch
+            score, performance = score.to(device), performance.to(device)
+            if torch.cuda.is_available():
+                score, performance = score.cuda(), performance.cuda()
 
             discriminator.zero_grad()
             batch_size = performance.size(0)
@@ -122,5 +127,9 @@ if __name__ == "__main__":
         type=str,
         help="Training configuration file (yaml).",
     )
+    parser.add_argument(
+        "--gpu_id", type=str, default="0", help="gpu to run your job on"
+    )
     args = parser.parse_args()
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
     train(cfg_file=args.config)

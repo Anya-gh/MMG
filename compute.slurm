@@ -12,4 +12,4 @@
 
 source /etc/profile.d/modules.sh
 source /etc/profile.d/conda.sh
-srun ./run.sh
+srun run.sh

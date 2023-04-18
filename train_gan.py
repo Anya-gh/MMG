@@ -20,6 +20,10 @@ def train(cfg_file):
     discriminator = Discriminator(4, 16, 3).to(device)
     d_optimiser = torch.optim.Adam(discriminator.parameters(), lr=float(cfg["transformer"].get("lr")), betas=(0.9, 0.98), eps=1e-9)
 
+    if torch.cuda.is_available():
+        generator.cuda()
+        discriminator.cuda()
+
     # adversarial and reconstruction loss
     adv_criterion = torch.nn.BCELoss()
     rec_criterion = ReconstructionLoss()
@@ -53,7 +57,7 @@ def train(cfg_file):
             discriminator.zero_grad()
             batch_size = performance.size(0)
             real_output = discriminator(performance)[:,1][-1]
-            real_labels = torch.ones((batch_size, ), dtype=torch.float)
+            real_labels = torch.ones((batch_size, ), dtype=torch.float, device=device)
             errD_real = adv_criterion(real_output, real_labels)
             errD_real.backward(retain_graph=True)
 
@@ -61,7 +65,7 @@ def train(cfg_file):
             gen_input = torch.cat((latent, score), dim=1)
             # Don't care about the output for the latent vector
             fake = generator(gen_input)[:,16:]
-            fake_labels = torch.zeros((batch_size, ), dtype=torch.float)
+            fake_labels = torch.zeros((batch_size, ), dtype=torch.float, device=device)
             fake_output = discriminator(fake)[:,1][-1]
             errD_fake = adv_criterion(fake_output, fake_labels)
             errD_fake.backward(retain_graph=True)
@@ -89,14 +93,18 @@ def train(cfg_file):
         for batch_idx, batch in tqdm(enumerate(val_loader)):
             with torch.no_grad():
                 score, performance = batch
+                score, performance = score.to(device), performance.to(device)
 
                 batch_size = performance.size(0)
                 real_output = discriminator(performance)[:,1][-1]
-                real_labels = torch.ones((batch_size, ), dtype=torch.float)
+                real_labels = torch.ones((batch_size, ), dtype=torch.float, device=device)
                 errD_real = adv_criterion(real_output, real_labels)
 
-                fake = generator(score)
-                fake_labels = torch.zeros((batch_size, ), dtype=torch.float)
+                latent = torch.randn(batch_size, 16, 4, dtype=torch.float, device=device)
+                gen_input = torch.cat((latent.float(), score.float()), dim=1)
+                # Don't care about the output for the latent vector
+                fake = generator(gen_input)[:,16:]
+                fake_labels = torch.zeros((batch_size, ), dtype=torch.float, device=device)
                 fake_output = discriminator(fake)[:,1][-1]
                 errD_fake = adv_criterion(fake_output, fake_labels)
 

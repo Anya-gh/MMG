@@ -10,9 +10,11 @@ class ReconstructionLoss(torch.nn.Module):
       # Doing it this way encourages it to be as different as possible, instead of just not being too close.
       # Possible solution is to scale it e.g. 1 for very close, but tends to 0 very quickly (e.g. difference of 0.25 is 0.0000001) or w/e
       sim_matrix = torch.squeeze(F.cosine_similarity(fake, real), dim=-1)
-      # Resulting graph (f and g respectively) https://www.desmos.com/calculator/qhgt0mprqq
+      # Resulting graph (f and g respectively) https://www.desmos.com/calculator/tiuvnazff6
       loss_f = torch.sum(sim_matrix)
-      loss_g = (math.e)**(3-loss_f)
+      alpha = 0.2
+      beta = 3 / (math.log((alpha+1)/alpha))
+      loss_g = alpha*((math.e)**(loss_f / beta) - 1)
       return loss_g
    
 class Generator(torch.nn.Module):

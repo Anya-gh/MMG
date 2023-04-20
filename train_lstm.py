@@ -25,7 +25,7 @@ def train(cfg_file):
     for epoch in range(epochs):
         print(f'Epoch: {epoch}')
         for batch_index, batch in enumerate(train_loader, 0):          
-            score, performance = batch
+            score, performance, _, _ = batch
             lstm.zero_grad()
             output = lstm(score)
             loss = criterion(output, performance)

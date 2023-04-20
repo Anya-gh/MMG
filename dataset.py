@@ -42,7 +42,8 @@ class MMGDataset(Dataset):
                                 pretty_midi.PrettyMIDI(os.path.join(self.dataset_path, robotic_path)))
             robotic_notes = mapping[:,0]
             performance_notes = mapping[:,1]
-            return torch.tensor(robotic_notes), torch.tensor(performance_notes)
+            # going to need to change a lot of other stuff.
+            return torch.tensor(robotic_notes), torch.tensor(performance_notes), robotic_path, performance_path
         except IndexError as error:
             print(error)
             print(f'For files: {os.path.join(self.dataset_path, performance_path)} {os.path.join(self.dataset_path, robotic_path)}')

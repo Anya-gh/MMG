@@ -11,7 +11,7 @@ def train(cfg_file):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print('Device: ', device)
     cfg = load_config(cfg_file)
-    train_loader, val_loader, test_loader = load_data(data_cfg=cfg["data"])
+    train_loader, val_loader, _ = load_data(data_cfg=cfg["data"])
     
     # models + optimisers
     generator = Generator(4, 16, 3, 3).to(device)
@@ -49,7 +49,7 @@ def train(cfg_file):
         
         for batch_idx, batch in tqdm(enumerate(train_loader)):
             
-            score, performance = batch
+            score, performance, _, _ = batch
             score, performance = score.to(device), performance.to(device)
             if torch.cuda.is_available():
                 score, performance = score.cuda(), performance.cuda()
@@ -92,7 +92,7 @@ def train(cfg_file):
         errD_val = 0
         for batch_idx, batch in tqdm(enumerate(val_loader)):
             with torch.no_grad():
-                score, performance = batch
+                score, performance, _, _ = batch
                 score, performance = score.to(device), performance.to(device)
 
                 batch_size = performance.size(0)

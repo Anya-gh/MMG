@@ -3,3 +3,5 @@ env
 log
 test.py
 *.pyc
+generated
+saved_models

@@ -77,9 +77,14 @@ def train(cfg_file):
             generator.zero_grad()
             fake_output = discriminator(fake)[:,1][-1]
             errG_adv = adv_criterion(fake_output, real_labels)
-            errG_rec = rec_criterion(fake, score)
+            # errG_rec = rec_criterion(fake, score)
             # print(f'{errG_rec} + {errG_adv}')
-            errG = errG_adv + errG_rec
+            # errG = errG_adv + errG_rec
+            # For some reason the reconstruction loss for performance and score is very high.
+            # Maybe the differences between the score and performance are too subtle for cosine similarity.
+            # We'd probably need to heavily scale it (find the average cosine similarity of performance/score and use
+            # that).
+            errG = errG_adv
             errG.backward()
             g_optimiser.step()
 

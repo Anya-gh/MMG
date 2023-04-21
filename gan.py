@@ -6,6 +6,8 @@ class ReconstructionLoss(torch.nn.Module):
    def __init__(self):
       super(ReconstructionLoss, self).__init__()
    def forward(self, fake, real):
+      fake = fake[:,:,:-1]
+      real = real[:,:,:-1]
       # This should probably be a threshold, i.e. if its too close penalise, otherwise don't.
       # Doing it this way encourages it to be as different as possible, instead of just not being too close.
       # Possible solution is to scale it e.g. 1 for very close, but tends to 0 very quickly (e.g. difference of 0.25 is 0.0000001) or w/e

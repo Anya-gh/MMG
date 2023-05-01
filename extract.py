@@ -6,6 +6,7 @@ import argparse
 import pretty_midi
 from typing import List
 from collections import defaultdict
+import os
 
 '''
 TODO
@@ -13,6 +14,24 @@ Instead of removing notes from robotic MIDI if no matching note, use random nois
 Change penalty.
 Test by converting mapping back to MIDI file.
 '''
+
+def convert(fake: np.ndarray, dir: str, initial_tempo=120) -> pretty_midi.PrettyMIDI:
+  fake_pm = pretty_midi.PrettyMIDI(initial_tempo=initial_tempo)
+  instrument = pretty_midi.Instrument(program=0, is_drum=False, name='Acoustic Grand')
+  for (start, end, velocity, pitch) in fake:
+    velocity = round(velocity)
+    velocity = 80
+    pitch = round(pitch)
+    note = pretty_midi.Note(velocity=velocity, pitch=pitch, start=start, end=end)
+    instrument.notes.append(note)
+  fake_pm.instruments.append(instrument)
+  #fake_notes = np.array(sorted([(note.start, note.end, note.velocity, note.pitch) for instrument in fake_pm.instruments for note in instrument.notes], key=lambda note : note[0]), dtype=float)
+  #print(fake_notes)
+  save_loc = os.path.join('generated', dir)
+  if not os.path.exists(save_loc):
+      os.makedirs(save_loc)
+  fake_pm.write(os.path.join(save_loc, 'gen.mid'))
+  return fake_pm
 
 def getNotesMap(notes):
     '''

@@ -14,10 +14,10 @@ def train(cfg_file):
     train_loader, val_loader, _ = load_data(data_cfg=cfg["data"])
     
     # models + optimisers
-    generator = Generator(4, 16, 3, 3).to(device)
+    generator = Generator(4, 128, 3, 3).to(device)
     g_optimiser = torch.optim.Adam(generator.parameters(), lr=float(cfg["transformer"].get("lr")), betas=(0.9, 0.98), eps=1e-9)
 
-    discriminator = Discriminator(4, 16, 3).to(device)
+    discriminator = Discriminator(4, 128, 3).to(device)
     d_optimiser = torch.optim.Adam(discriminator.parameters(), lr=float(cfg["transformer"].get("lr")), betas=(0.9, 0.98), eps=1e-9)
 
     if torch.cuda.is_available():

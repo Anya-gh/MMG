@@ -8,11 +8,12 @@ from gan import Generator, Discriminator, ReconstructionLoss
 from tqdm import tqdm
 from extract import convert
 
-GEN_PT = 'gen_epoch_80.pt'
+GEN_PT = 'gen_epoch_140.pt'
 DIS_PT = 'dis_epoch_80.pt'
 
 # In most cases you shouldn't use this. There's no guarantee the model hasn't seen the data pulled from the testloader, because
-# it isn't the same testloader generated when it was trained.
+# it isn't the same testloader generated when it was trained. On the other hand if you just want to test to see if it produces
+# decent music, this will help you do that quickly.
 def _generate(cfg_file):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print('Device: ', device)
@@ -22,10 +23,11 @@ def _generate(cfg_file):
     save_dir = cfg["training"].get("save_dir")
     
     # models
-    generator = Generator(4, 16, 3, 3).to(device)
+    generator = Generator(4, 128, 3, 3).to(device)
     generator.load_state_dict(torch.load(os.path.join(save_dir, GEN_PT), map_location=device))
-
-    score, _, score_path, _ = next(iter(test_loader))
+    
+    dataloader_iter = iter(test_loader)
+    score, _, score_path, _ = next(dataloader_iter)
     print(score)
     print(f'Generating new score from {score_path[0]}...')
     gen_path = '/'.join(score_path[0].split('/')[:-1])
@@ -33,6 +35,7 @@ def _generate(cfg_file):
     gen_input = torch.cat((latent, score), dim=1)
     fake = generator(gen_input)[:,16:]
     fake = fake.detach().numpy()[0]
+    print(fake)
     convert(fake, gen_path)
     print(f'Done!')
 

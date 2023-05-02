@@ -4,13 +4,13 @@ A music generation model that uses a note-matching approach to transform a score
 
 ## Setup
 
-### Usage
+### Usage
 
 Running ```run.sh``` will create a virtual environment, install the required libraries, start training the GAN and start tensorboard. By default it will use the first available GPU, or the CPU if there is no GPU.
 
 If you want to run just the training script, use ```python train_gan.py asap.yaml```. The config file, ```asap.yaml``` can be changed, or replaced entirely, with any hyperparameters of your choice; the one given is for ASAP, so configure any replacement files accordingly for the dataset used.
 
-### Data
+### Data
 
 Use ```download.sh``` to get the [ASAP dataset](https://github.com/fosfrancesco/asap-dataset).
 
